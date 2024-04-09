@@ -33,7 +33,7 @@ func CheckAll(ctx context.Context) error {
 
 // Check checks a single site.
 //
-//encore:api public method=POST path=/check/:siteID
+//encore:api public method=POST path=/checks/:siteID
 func Check(ctx context.Context, siteID int) error {
 	site, err := site.Get(ctx, siteID)
 	if err != nil {
@@ -47,6 +47,13 @@ func check(ctx context.Context, site *site.Site) error {
 	if err != nil {
 		return err
 	}
+
+	// Publish a Pub/Sub message if the site transitions
+	// from up->down or from down->up.
+	if err := publishOnTransition(ctx, site, result.Up); err != nil {
+		return err
+	}
+
 	_, err = db.Exec(ctx, `
 		INSERT INTO checks (site_id, up, checked_at)
 		VALUES ($1, $2, NOW())

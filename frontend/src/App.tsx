@@ -107,6 +107,7 @@ const SiteList: FC = () => {
                   {data!.sites.map((site) => {
                     const checkedAt = status?.sites[site.id]?.checked_at;
                     const dt = checkedAt && DateTime.fromISO(checkedAt);
+
                     return (
                       <tr key={site.id}>
                         <td className="px-3 py-4 text-sm">
